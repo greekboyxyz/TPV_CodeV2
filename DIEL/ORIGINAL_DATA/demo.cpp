@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     epsfp = fopen("Fe3O4.txt","r");
     lamfp = fopen("W_Palik.txt","r");
     //wfp   = fopen("W_ald_interpolated","w");
-    int dim = 610;
+    int dim = 609;
     std::vector<double> X(dim), Y(dim), Z(dim);
     std::vector<double> LAM(4000);
 
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
       X[i] = lam;
       Y[i] = n;
       Z[i] = k;
-      if (i>0) printf(" %i %12.10f\n",i,X[i]-X[i-1]); 
+      //if (i>0) printf(" %i %12.10f\n",i,X[i]-X[i-1]); 
     }    
     for (i=0; i<4000; i++) {
     
