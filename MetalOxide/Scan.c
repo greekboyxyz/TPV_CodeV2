@@ -64,10 +64,11 @@ int main(int argc, char* argv[]) {
   FILE *fp;
 
   // Character string(s)
-  char *write, *line, *subfile, *absorberfile, *dielectricfile;
+  char *write, *line, *subfile, *absorberfile, *dielectricfile, *pfile;
 
   write   = VEC_CHAR(1000);
   line    = VEC_CHAR(1000);
+  pfile   = VEC_CHAR(1000);
 
   subfile        = VEC_CHAR(1000);
   absorberfile   = VEC_CHAR(1000);
@@ -155,6 +156,9 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%s",line);
   fscanf(fp,"%lf",&Tempmin);
   fscanf(fp,"%lf",&Tempmax);
+  // name of file to write Pareto front to
+  fscanf(fp,"%s",line);
+  fscanf(fp,"%s",pfile);
 
   // How many variations will we try?
   NumVars = N_max-N_min;
@@ -277,7 +281,8 @@ int main(int argc, char* argv[]) {
 	     double complex eps_abs  = absorber_n[ii]*absorber_n[ii];
 	     double complex eps_diel = dielectric_n[ii]*dielectric_n[ii]; 
 	     // Compute alloy RI using Bruggenman theory
-	     Bruggenman(vf, eps_abs, eps_diel, &eta, &kappa);
+	     //Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
+             MaxwellGarnett(vf, 3.097, substrate_eps[i], &eta, &kappa);
              // store in alloy layer RI
 	     rind[1] = eta + I*kappa;
 
@@ -308,8 +313,9 @@ int main(int argc, char* argv[]) {
  
            }
            SE = SpectralEfficiency(Emiss, NumLam, LamList, lbg, Temp, &PU);
-           printf("  %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",vf,Nlayer, d1, d2, Temp, SE, PU);
-           SEA[varcount] = SE;
+           printf(" %i  %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",varcount,vf,Nlayer, d1, d2, Temp, SE, PU);
+           fflush(stdout);
+	   SEA[varcount] = SE;
            SDA[varcount] = PU;
 
          }
@@ -318,42 +324,48 @@ int main(int argc, char* argv[]) {
    }
  }
 
- /* 
- FILE *pf;
- pf = fopen("Pareto_18_BRUGG_SiO2_TiO2_Static_Temp.txt","w");
- int id;
-
- for (int TI=0; TI<numT; TI++) {
-
- for (TK=0; TK<numVf; TK++) {
-
- for (F1=0; F1<numFac; F1++) {
-
- for (F2=0; F2<numFac; F2++) {
   
- for (NI=0; NI<numNlayers; NI++) {
+ FILE *pf;
+ pf = fopen(pfile,"w");
+ int id;
+ varcount=-1;
+ for (int i=0; i<NumVars; i++) {
 
-   i = TI*numT*numVf*numFac*numFac+TK*numVf*numFac*numFac+F1*numFac*numFac+F2*numFac+NI;
-   // id is 1 if member i is dominated by at least one other member j!=i
-   // a member is pareto optimal only if it is NOT dominated 
-   id = IsDominated(i, numT*numVf*numFac*numNlayers*numFac, SEA, SDA);
-   if (id) PF[i] = 0;
-   else {
-     PF[i] = 1;
-     fprintf(pf,"  %f  %f     %f       %f   %i     %12.10f  %12.10e\n",
-             VFa[TK],SFAC[F1]*d1,SFAC[F2]*d2,Tem[TI],NLa[NI],SEA[i],SDA[i]);
+   for (int j=0; j<NumVars; j++) {
+
+     for (int k=0; k<NumVars; k++) {
+
+       for (int l=0; l<NumVars; l++) {
+  
+         for (int m=0; m<NumVars; m++) {
+
+           varcount++;
+           //printf("  varcount is %i\n",varcount);
+	   //fflush(stdout);
+	   // id is 1 if member i is dominated by at least one other member j!=i
+	   // a member is pareto optimal only if it is NOT dominated 
+
+	   id = IsDominated(varcount, totalVars, SEA, SDA);
+
+	   if (id) PF[varcount] = 0;
+
+	   else {
+
+	      	   PF[varcount] = 1;
+
+	      	   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e\n",
+
+		      		   NLA[i],D1A[j],D2A[k],VFA[l],TA[m],SEA[varcount],SDA[varcount]);
+	   }
+       	 }
+       }
+     }
    }
+ }
+ fclose(fp);
+ fclose(pf);
 
-
-  }
-  }
-  }
-  }
-  }
-fclose(fp);
-fclose(pf);
-*/
-	return 0;
+ return 0;
 
 }
 
