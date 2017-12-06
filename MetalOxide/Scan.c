@@ -10,7 +10,7 @@ double *VEC_DOUBLE(int dim);
 char *VEC_CHAR(int dim);
 double complex *VEC_CDOUBLE(int dim);
 void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int Cidx, double complex *C);
-void PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp,
+double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp,
                 int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps);
 void TransferMatrix(int Nlayer,double thetaI, double k0, double complex *rind, double *d,
 double complex *cosL, double *beta, double *alpha, double complex *m11, double complex *m21);
@@ -272,7 +272,8 @@ int main(int argc, char* argv[]) {
            thetaI = 0;
            // Structure is established, now analayze it for its spectrum 
            for (int ii=0; ii<NumLam; ii++) {
- 
+
+	     	     
              lambda = LamList[ii];    // Lambda in meters
              k0 = 2*pi*1e-6/lambda;  // k0 in inverse microns - verified
              w=2*pi*c/lambda;        // angular frequency 
@@ -283,16 +284,17 @@ int main(int argc, char* argv[]) {
 	     double complex eps_diel = dielectric_n[ii]*dielectric_n[ii]; 
 	     // Compute alloy RI using Bruggenman theory
 	     //Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
-             MaxwellGarnett(vf, 3.097, substrate_eps[i], &eta, &kappa);
+             MaxwellGarnett(vf, 3.097, substrate_eps[ii], &eta, &kappa);
              // store in alloy layer RI
 	     rind[1] = eta + I*kappa;
 
 	     // We have Palik W stored as eps, want RI
-	     rind[Nlayer-2] = csqrt(substrate_eps[i]);
+	     rind[Nlayer-2] = csqrt(substrate_eps[ii]);
         
 	     // Solve the Transfer Matrix Equations
 	     TransferMatrix(Nlayer, thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
-             rho = (2*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
+
+	     rho = (2*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
  
 	     // Fresnel reflection coefficient (which is complex if there are absorbing layers)
 	     r = m21/m11; 
@@ -355,7 +357,7 @@ int main(int argc, char* argv[]) {
 	      	   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e\n",
 
 		      		   NLA[i],D1A[j],D2A[k],VFA[l],TA[m],SEA[varcount],SDA[varcount]);
-		   PrintSpectrum("t.txt",d,rind,NLA[i],D1A[j],nlow,D2A[k],nhi,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
+		   double RT = PrintSpectrum("t.txt",d,rind,NLA[i],D1A[j],nlow,D2A[k],nhi,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
 	   }
        	 }
        }
@@ -371,7 +373,7 @@ int main(int argc, char* argv[]) {
 
 // Functions
 //
-void PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp, 
+double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp, 
 		int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps) {
             FILE *fp;
 	    double Tangle;
@@ -442,7 +444,9 @@ void PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, 
 
              // Solve the Transfer Matrix Equations
              TransferMatrix(Nlayer, thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
-             double rho = (2*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
+
+	     double rho = (2*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
+
 
              // Fresnel reflection coefficient (which is complex if there are absorbing layers)
              r = m21/m11;
@@ -464,6 +468,7 @@ void PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, 
            fprintf(fp," %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",vf,Nlayer, d1, d2, Temp, SE, PU);
            free(Emiss);
 	   fclose(fp);
+           return R;
 }
 
 
