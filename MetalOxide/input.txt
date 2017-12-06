@@ -1,5 +1,5 @@
 Nmin_Nmax
-5 20
+5 7
 d1min_d1max            
 0.1  0.3
 d2min_d2max
@@ -9,4 +9,4 @@ vfmin_vfmax
 Tmin_Tmax
 1000 1700
 ParetoFile
-Test_Pareto.txt
+Test2_Pareto.txt

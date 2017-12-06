@@ -1,2 +1,4 @@
 *.dat
 MetalOxide/*.dat
+*.out
+MetalOxide/*.out

@@ -10,7 +10,9 @@ double *VEC_DOUBLE(int dim);
 char *VEC_CHAR(int dim);
 double complex *VEC_CDOUBLE(int dim);
 void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int Cidx, double complex *C);
-void TransferMatrix(double thetaI, double k0, double complex *rind, double *d,
+void PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp,
+                int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps);
+void TransferMatrix(int Nlayer,double thetaI, double k0, double complex *rind, double *d,
 double complex *cosL, double *beta, double *alpha, double complex *m11, double complex *m21);
 double SpectralEfficiency(double *emissivity, int N, double *lambda, double lambdabg, double Temperature, double *P);
 void Bruggenman(double f, double complex epsD, double complex epsM, double *eta, double *kappa);
@@ -20,7 +22,6 @@ int ReadDielectric(char *file, double *lambda, double complex *epsM);
 int IsDominated(int idx, int LENGTH, double *O1,double *O2);
 void ReadBRRind(int numBR, double lambda, double *BRlambda, double complex *BRind, double *n, double *k); 
 // Global variables
-int Nlayer;
 int polflag;
 double c = 299792458;
 double pi=3.141592653589793;
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]) {
   double sti, n1, n2, thetaT, rp, Rp, Tangle;
   double eta, kappa;
   double we, de, w;
-
+  int Nlayer;
   // Lists for spectral efficiency
   double *LamList, *Emiss, *clam;
   // Variables for Spectral Efficiency
@@ -290,15 +291,12 @@ int main(int argc, char* argv[]) {
 	     rind[Nlayer-2] = csqrt(substrate_eps[i]);
         
 	     // Solve the Transfer Matrix Equations
-	     TransferMatrix(thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
-             rho = (2*pi*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
+	     TransferMatrix(Nlayer, thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
+             rho = (2*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
  
 	     // Fresnel reflection coefficient (which is complex if there are absorbing layers)
 	     r = m21/m11; 
  
-             // Stored energy 
-             st = (r + 1);
-             st = st*conj(st);
              // Fresnel transmission coefficient (also complex if there are absorbing layers)
              t = 1./m11;
  
@@ -329,6 +327,7 @@ int main(int argc, char* argv[]) {
  pf = fopen(pfile,"w");
  int id;
  varcount=-1;
+ int po=0;
  for (int i=0; i<NumVars; i++) {
 
    for (int j=0; j<NumVars; j++) {
@@ -352,10 +351,11 @@ int main(int argc, char* argv[]) {
 	   else {
 
 	      	   PF[varcount] = 1;
-
+                   po++;
 	      	   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e\n",
 
 		      		   NLA[i],D1A[j],D2A[k],VFA[l],TA[m],SEA[varcount],SDA[varcount]);
+		   PrintSpectrum("t.txt",d,rind,NLA[i],D1A[j],nlow,D2A[k],nhi,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
 	   }
        	 }
        }
@@ -370,6 +370,103 @@ int main(int argc, char* argv[]) {
 }
 
 // Functions
+//
+void PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp, 
+		int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps) {
+            FILE *fp;
+	    double Tangle;
+       	    double eta, kappa;
+            double h=6.626e-34;
+            double kb = 1.38064852e-23;
+	    double *Emiss;
+	    double lbg = 2254e-9;
+	    double PU, SE;
+	    Emiss = (double *)malloc(NumLam*sizeof(double));
+            fp = fopen(filename,"w");
+	    // Air and alloy thicknesses
+            d[0] = 0.;
+            d[1] = 0.02;
+
+            // Refractive index of air
+            rind[0] = 1.00 + 0.*I;
+            rind[1] = 1.00 + 0.*I;
+
+            // Now start the Bragg Reflector
+            for (int ii=2; ii<Nlayer-2; ii++) {
+
+              if (ii%2==0) {
+                d[ii] = d1;
+                rind[ii] = nlow;
+              }
+              else {
+                d[ii] = d2;
+                rind[ii] = nhi;
+              }
+            }
+
+            // W layer that is the substrate for the Bragg Reflector
+            d[Nlayer-2] = 0.9;
+            // Temporary - will replace with Tungsten!
+            rind[Nlayer-2] = 1.0 + 0.*I;
+            // Air underneath
+            d[Nlayer-1] = 0.;
+            rind[Nlayer-1] = 1.0 + 0.*I;
+
+           //  Top/Bottom layer RI for Transmission calculation
+           double n1 = creal(rind[0]);
+           double n2 = creal(rind[Nlayer-1]);
+
+           // Normal incidence
+           double thetaI = 0;
+           // Structure is established, now analayze it for its spectrum
+           double complex m21, m11, cosL, r, t;
+	   double beta, alpha, R, T, A;
+	   for (int ii=0; ii<NumLam; ii++) {
+
+             double lambda = LamList[ii];    // Lambda in meters
+             double k0 = 2*pi*1e-6/lambda;  // k0 in inverse microns - verified
+             double w=2*pi*c/lambda;        // angular frequency
+
+	                  // Weak absorber and dielectric data stored as RI, want them in eps
+             // for effective medium theory
+             double complex eps_abs  = abs_n[ii]*abs_n[ii];
+             double complex eps_diel = diel_n[ii]*diel_n[ii];
+             // Compute alloy RI using Bruggenman theory
+             //Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
+             MaxwellGarnett(vf, 3.097, subs_eps[ii], &eta, &kappa);
+             // store in alloy layer RI
+             rind[1] = eta + I*kappa;
+
+             // We have Palik W stored as eps, want RI
+             rind[Nlayer-2] = csqrt(subs_eps[ii]);
+
+             // Solve the Transfer Matrix Equations
+             TransferMatrix(Nlayer, thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
+             double rho = (2*h*c*c/pow(lambda,5))*(1/(exp(h*c/(lambda*kb*Temp))-1));
+
+             // Fresnel reflection coefficient (which is complex if there are absorbing layers)
+             r = m21/m11;
+
+             // Fresnel transmission coefficient (also complex if there are absorbing layers)
+             t = 1./m11;
+
+             // Reflectance, which is a real quantity between 0 and 1
+             R = creal(r*conj(r));
+             Tangle =  n2*creal(cosL)/(n1*cos(thetaI));
+             T = creal(t*conj(t))*Tangle;
+             A = 1 - R - T;
+
+             // Store absorbance/emissivity in array Emiss
+             Emiss[ii] = A;
+             fprintf(fp,"%8.6e  %8.6f  %8.6f  %8.6f  %8.6f\n",LamList[ii],R,A,rho*A,rho);
+           }
+           SE = SpectralEfficiency(Emiss, NumLam, LamList, lbg, Temp, &PU);
+           fprintf(fp," %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",vf,Nlayer, d1, d2, Temp, SE, PU);
+           free(Emiss);
+	   fclose(fp);
+}
+
+
 int *VEC_INT(int dim){
   int *v,i;
   v = (int *)malloc(dim*sizeof(int));
@@ -414,7 +511,7 @@ char *VEC_CHAR(int dim){
   return v;
 }
 
-void TransferMatrix(double thetaI, double k0, double complex *rind, double *d, 
+void TransferMatrix(int Nlayer, double thetaI, double k0, double complex *rind, double *d, 
 double complex *cosL, double *beta, double *alpha, double complex *m11, double complex *m21) { 
   
   int i, j, k, indx;
@@ -574,40 +671,6 @@ void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int C
 
 }
 
-double EvaluateMaterial(double *d, double complex *rind, double lambda_low, double lambda_hi, int numLambda, double lambda_bg) {
-
-  int i, j;
-  double k0, thetaI, beta, alpha, dLambda;
-  double complex cosL, m11, m21, r, t;
-  double R, T, A;
-
-  double *lambda, *emissivity;
-
-  lambda      = VEC_DOUBLE(numLambda);
-  emissivity  = VEC_DOUBLE(numLambda);
-
-  dLambda = (lambda_hi-lambda_low)/numLambda;
-  thetaI = 0.;
-
-  for (i=0; i<numLambda; i++) {
-
-    lambda[i] = lambda_low+i*dLambda;
-    // wavenumber
-    k0 = 1000./lambda[i];
-    // solve transfer matrix equations
-    TransferMatrix(thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
-    // Definition of reflection amplitude
-    r = m21/m11;
-    // Fresnel transmission coefficient (also complex if there are absorbing layers)
-    t = 1./m11;
-    R = creal(r*conj(r));
-    T = creal(rind[Nlayer]*cosL/(rind[0]*cos(thetaI))*t*conj(t));
-
-    
-  }
-  free(lambda);
-  free(emissivity);
-}
 double SpectralEfficiency(double *emissivity, int N, double *lambda, double lbg, double T, double *P){
     int i;
     double dlambda, sumD, sumN;
