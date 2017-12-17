@@ -16,11 +16,12 @@
 
 - Scan.exe is a program that will scan through a number of structural and material parameters, identify the set of Pareto optimal structures, and compute the spectral efficiency, useful power density, and thermal emission spectrum for all Pareto optimal structures
 
-- input.txt is an input file that specifies the material and structural parameters that Scan.exe will use.  Before running Scan.exe, open input.txt and verify it contains parameters relevant to the system you want to study.  You can use the text editor 'vim' to open input.txt
+- input.txt is an input file that specifies the material and structural parameters that Scan.exe will use.  Before running Scan.exe, open input.txt and verify it contains parameters relevant to the system you want to study.  You can use the text editor 'vim' to open input.txt:
 
 `vim input.txt`
 
-    Nmin_Nmax
+- Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is pasted below for reference, and the explanation of the labels and values are commented in this readme for clarity.  
+    Nmin_Nmax // this
 
     5 28
 
