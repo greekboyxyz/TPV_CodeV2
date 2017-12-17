@@ -41,14 +41,46 @@ Let's say you've decided to perform a scan of structures where the metal is Rhod
 #!/usr/bin/gnuplot
 
 set terminal postscript enhanced color 'Helvetica' 25
-set output 'Rh_Pareto.eps'
+set output 'Rh_test_Pareto.eps'
 set xlabel 'Spectral Efficiency'
 set ylabel 'Sectral Density (W/m^2)'
 set pointsize 3
 plot 'Rh_test_Pareto.txt' u 6:7 w p
 ```
 
+- Execute the gnuplot script you just edited by typing
 
+`./plot_pareto.gnu`
+
+- There will typically be many points on the Pareto front, to plot the thermal emission spectra of the structure corresponding to the 5th point on the Pareto front, edit the content of <i> plot_spectra.gnu </i> to match the following:
+
+```gnuplot 
+#!/usr/bin/gnuplot
+
+set terminal postscript enhanced color 'Helvetica' 25
+set output 'Rh_test5_spectra.eps'
+set xlabel 'Wavelength (nm)'
+set ylabel 'Thermal Emission (W/ m^2 / nm / sr )'
+set pointsize 3
+plot 'Rh_test5.txt' u 1:4 w l lw 4 title 'TE Spectrum', \
+'Rh_test5.txt' u 1:5 w l lw 4 title 'Blackbody Spectrum'
+```
+
+- Execute the gnuplot script you just edited by typing
+
+`./plot_spectra.gnu`
+
+- Once you have plotted all quantities you wish to analyze, push your changes to github:
+
+`git init`
+
+`git add .`
+
+`git commit -m 'Added my project'`
+
+`git push`
+
+- Enter Username when prompted!
 
 ## II. Input File
 - Note: Comments about the meaning of the input parameters are in parenthesis and should <b> NOT </b> appear in the actual file input.txt
