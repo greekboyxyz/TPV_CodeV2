@@ -31,8 +31,8 @@
         d1min_d1max (minimum and maximum thickness of low refractive index layer) 
 
         0.1  0.3    (scan will consider low refractive index layers between 0.1 and 0.3 microns thick)
-
-            d2min_d2max  (minimum and maximum thickness of high refractive index layer) 
+        
+            d2min_d2max  (minimum and maximum thickness of high refractive index layer) 
 
             0.1  0.3     (scan will consider high refractive index layers between 0.1 and 0.3 microns thick)
 
