@@ -21,7 +21,7 @@
 `vim input.txt`
 
 - Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is pasted below for reference, and the explanation of the labels and values are commented in this readme for clarity.  
-    Nmin_Nmax   * this
+    Nmin_Nmax   */ this */
 
     5 28
 
