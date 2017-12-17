@@ -1,4 +1,6 @@
 
+
+# Notes on Different Systems
 (1) oxide-oxide layers (ex. Fe3O4-Al2O3, or Fe3O4-Fe2O3) on top of BR
 
     Fe3O4 is absorbing and has a high melting point.
