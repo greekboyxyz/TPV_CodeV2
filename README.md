@@ -12,7 +12,28 @@
 
 - At a minimum, you should see the following files/folders after typing ls:
 
-``DIEL  input.txt  plot_pareto.gnu  plot_spectra.gnu  Scan.c  Scan.exe  SPECTRA``
+`DIEL  input.txt  plot_pareto.gnu  plot_spectra.gnu  Scan.c  Scan.exe  SPECTRA`
+
+- Scan.exe is a program that will scan through a number of structural and material parameters, identify the set of Pareto optimal structures, and compute the spectral efficiency, useful power density, and thermal emission spectrum for all Pareto optimal structures
+
+- input.txt is an input file that specifies the material and structural parameters that Scan.exe will use.  Before running Scan.exe, open input.txt and verify it contains parameters relevant to the system you want to study.  You can use the text editor 'vim' to open input.txt
+
+`vim input.txt`
+
+Nmin_Nmax
+5 28
+d1min_d1max
+0.1  0.3
+d2min_d2max
+0.1  0.3
+vfmin_vfmax
+0.0 1.0
+Tmin_Tmax
+1000 1700
+FilePrefix
+Rh_Alumina
+AbsorberFileName
+DIEL/Rh_Spline.txt
 
 
 # II. Notes on Different Systems
