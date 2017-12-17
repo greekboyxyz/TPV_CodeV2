@@ -22,7 +22,8 @@
 
 - Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is pasted below for reference, and the explanation of the labels and values are commented in this readme for clarity.  Comments are in parenthesis and should <b> NOT </b> appear in the actual file input.txt  
 
-    Nmin_Nmax   
+
+    Nmin_Nmax   (minimum and maximum number of layers in the structure) 
 
     5 28
 
