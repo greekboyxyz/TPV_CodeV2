@@ -20,7 +20,10 @@
 
 `vim input.txt`
 
-- Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is pasted below for reference, and the explanation of the labels and values are commented in this readme for clarity.  Comments are in parenthesis and should <b> NOT </b> appear in the actual file input.txt  
+- Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is provided in Section <b> II. Input File </b> for reference, and the explanation of the labels and values are commented in this readme for clarity.  Comments are in parenthesis and should <b> NOT </b> appear in the actual file input.txt  
+
+## II. Input File
+- Note: Comments about the meaning of the input parameters are in parenthesis and should <b> NOT </b> appear in the actual file input.txt
 
 >Nmin_Nmax   (minimum and maximum number of layers in the structure) 
 >
@@ -51,7 +54,7 @@
 >DIEL/Rh_Spline.txt (Scan.exe will read the metal material data from the file Rh_Spline.txt in the DIEL folder... this is data for the metal Rhodium (Rh))
 
 
-# II. Notes on Different Systems
+# III. Notes on Different Systems
 (1) oxide-oxide layers (ex. Fe3O4-Al2O3, or Fe3O4-Fe2O3) on top of BR
 
     Fe3O4 is absorbing and has a high melting point.
