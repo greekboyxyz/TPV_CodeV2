@@ -25,6 +25,15 @@
 - Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is provided in Section <b> II. Input File </b> for reference, and the explanation of the labels and values are commented in this readme for clarity.  Comments are in parenthesis and should <b> NOT </b> appear in the actual file input.txt  
 - Let's say you've decided to perform a scan of structures where the metal is Rhodium (Rh), and have changed the input file appropriately (see <b> II. Input File </b> for more information about how to change the input file)
 
+```gnuplot 
+#!/usr/bin/gnuplot
+
+set terminal postscript enhanced color 'Helvetica' 25
+set output 'Test.eps'
+```
+
+
+
 ## II. Input File
 - Note: Comments about the meaning of the input parameters are in parenthesis and should <b> NOT </b> appear in the actual file input.txt
 
