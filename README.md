@@ -6,7 +6,13 @@
 
 `cd MetalOxide`
 
+- To view the contents of this folder, use the 'ls' command (ls for list)
 
+`ls`
+
+- At a minimum, you should see the following files/folders after typing ls:
+
+"DIEL  input.txt  plot_pareto.gnu  plot_spectra.gnu  Scan.c  Scan.exe  SPECTRA"
 
 
 # II. Notes on Different Systems
