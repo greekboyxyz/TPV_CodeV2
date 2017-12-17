@@ -1,4 +1,6 @@
+# Protocol for Running Pareto Scans and Plotting Results
 
+## The following instructions use the noble metal-oxide system as an example (see system 3 under Notes on Different Systems)
 
 # Notes on Different Systems
 (1) oxide-oxide layers (ex. Fe3O4-Al2O3, or Fe3O4-Fe2O3) on top of BR
