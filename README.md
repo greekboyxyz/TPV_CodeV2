@@ -12,7 +12,7 @@
 
 - At a minimum, you should see the following files/folders after typing ls:
 
-"DIEL  input.txt  plot_pareto.gnu  plot_spectra.gnu  Scan.c  Scan.exe  SPECTRA"
+``DIEL  input.txt  plot_pareto.gnu  plot_spectra.gnu  Scan.c  Scan.exe  SPECTRA``
 
 
 # II. Notes on Different Systems
