@@ -32,17 +32,17 @@
 
         0.1  0.3    (scan will consider low refractive index layers between 0.1 and 0.3 microns thick)
         
-            d2min_d2max  (minimum and maximum thickness of high refractive index layer) 
+        d2min_d2max  (minimum and maximum thickness of high refractive index layer) 
 
-            0.1  0.3     (scan will consider high refractive index layers between 0.1 and 0.3 microns thick)
+        0.1  0.3     (scan will consider high refractive index layers between 0.1 and 0.3 microns thick)
 
-            vfmin_vfmax  (minimum and maximum volume fraction of alloy layer)
+        vfmin_vfmax  (minimum and maximum volume fraction of alloy layer)
 
-            0.0 1.0      (scan will consider alloys with volume fractions between 0 and 100% of the metal in the oxide)
+        0.0 1.0      (scan will consider alloys with volume fractions between 0 and 100% of the metal in the oxide)
 
-            Tmin_Tmax    (minimum and maximum temperature of the structures)
+        Tmin_Tmax    (minimum and maximum temperature of the structures)
 
-            1000 1700    (Scan will consider performance of structures when they are between 1000 and 1700 K)
+        1000 1700    (Scan will consider performance of structures when they are between 1000 and 1700 K)
 
             FilePrefix   (Controls what the name of various output files will be)
 
