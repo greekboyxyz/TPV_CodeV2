@@ -24,33 +24,33 @@
 
 
     
-    Nmin_Nmax   (minimum and maximum number of layers in the structure) 
+        Nmin_Nmax   (minimum and maximum number of layers in the structure) 
 
-    5 28        (scan will consider structures with number of layers between 5 and 28)
+        5 28        (scan will consider structures with number of layers between 5 and 28)
 
-    d1min_d1max (minimum and maximum thickness of low refractive index layer) 
+        d1min_d1max (minimum and maximum thickness of low refractive index layer) 
 
-    0.1  0.3    (scan will consider low refractive index layers between 0.1 and 0.3 microns thick)
+        0.1  0.3    (scan will consider low refractive index layers between 0.1 and 0.3 microns thick)
 
-    d2min_d2max  (minimum and maximum thickness of high refractive index layer) 
+        d2min_d2max  (minimum and maximum thickness of high refractive index layer) 
 
-    0.1  0.3     (scan will consider high refractive index layers between 0.1 and 0.3 microns thick)
+        0.1  0.3     (scan will consider high refractive index layers between 0.1 and 0.3 microns thick)
 
-    vfmin_vfmax  (minimum and maximum volume fraction of alloy layer)
+        vfmin_vfmax  (minimum and maximum volume fraction of alloy layer)
 
-    0.0 1.0      (scan will consider alloys with volume fractions between 0 and 100% of the metal in the oxide)
+        0.0 1.0      (scan will consider alloys with volume fractions between 0 and 100% of the metal in the oxide)
 
-    Tmin_Tmax    (minimum and maximum temperature of the structures)
+        Tmin_Tmax    (minimum and maximum temperature of the structures)
 
-    1000 1700    (Scan will consider performance of structures when they are between 1000 and 1700 K)
+        1000 1700    (Scan will consider performance of structures when they are between 1000 and 1700 K)
 
-    FilePrefix   (Controls what the name of various output files will be)
+        FilePrefix   (Controls what the name of various output files will be)
 
-    Rh_Alumina   (All output files created by Scan.exe will begin with the word 'Rh_Alumina')
+        Rh_Alumina   (All output files created by Scan.exe will begin with the word 'Rh_Alumina')
 
-    AbsorberFileName (Specifies where Scan.exe should read the data that defines the metal material)
+        AbsorberFileName (Specifies where Scan.exe should read the data that defines the metal material)
 
-    DIEL/Rh_Spline.txt (Scan.exe will read the metal material data from the file Rh_Spline.txt in the DIEL folder... this is data for the metal Rhodium (Rh))
+        DIEL/Rh_Spline.txt (Scan.exe will read the metal material data from the file Rh_Spline.txt in the DIEL folder... this is data for the metal Rhodium (Rh))
 
 
 # II. Notes on Different Systems
