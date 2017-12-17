@@ -23,13 +23,29 @@
 - <b> NOTE: </b> vim is a text editor, for a tutorial on basic usage of vim following [this link.](http://www.openvim.com/)
 
 - Once input.txt is open, you will see a variety of parameter labels (words) and parameter values (numbers).  An example of input.txt is provided in Section <b> II. Input File </b> for reference, and the explanation of the labels and values are commented in this readme for clarity.  Comments are in parenthesis and should <b> NOT </b> appear in the actual file input.txt  
-- Let's say you've decided to perform a scan of structures where the metal is Rhodium (Rh), and have changed the input file appropriately (see <b> II. Input File </b> for more information about how to change the input file)
+Let's say you've decided to perform a scan of structures where the metal is Rhodium (Rh), and have changed the input file appropriately such that the file prefix is <i> Rh_test </i> (see <b> II. Input File </b> for more information about how to change the input file)
+
+- Run the program Scan.exe and direct the output to a file called 'Rh_Scan.txt'
+
+`./Scan.exe input.txt >& Rh_Scan.txt &`
+
+<b> NOTE: </b> The program will scan millions of structures, so it will take hours to finish.  If you start a calculation in the morning, check back in the evening.  If you start it in the evening, check back in the morning.
+
+- To plot the Pareto front which will be stored in a file called <i> Rh_test_Pareto.txt </i>, first open up the file <i> plot_pareto.gnu </i>
+
+`vim plot_pareto.gnu`
+
+- Edit the contents of <i> plot_pareto.gnu </i> to match the following:
 
 ```gnuplot 
 #!/usr/bin/gnuplot
 
 set terminal postscript enhanced color 'Helvetica' 25
-set output 'Test.eps'
+set output 'Rh_Pareto.eps'
+set xlabel 'Spectral Efficiency'
+set ylabel 'Sectral Density (W/m^2)'
+set pointsize 3
+plot 'Rh_test_Pareto.txt' u 6:7 w p
 ```
 
 
