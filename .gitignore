@@ -2,3 +2,5 @@
 MetalOxide/*.dat
 *.out
 MetalOxide/*.out
+*.txt
+MetalOxide/*.txt

@@ -65,40 +65,16 @@ int main(int argc, char* argv[]) {
   FILE *fp;
 
   // Character string(s)
-  char *write, *line, *subfile, *absorberfile, *dielectricfile, *pfile;
+  char *write, *line, *subfile, *absorberfile, *dielectricfile, *prefix, *pfile;
 
   write   = VEC_CHAR(1000);
   line    = VEC_CHAR(1000);
   pfile   = VEC_CHAR(1000);
+  prefix = VEC_CHAR(1000);
 
   subfile        = VEC_CHAR(1000);
   absorberfile   = VEC_CHAR(1000);
   dielectricfile = VEC_CHAR(1000);
-
-  // Now define the specific file names
-  strcpy(subfile,"DIEL/W_Palik.txt");
-  strcpy(absorberfile,"DIEL/Fe3O4_Spline.txt");
-  strcpy(dielectricfile,"DIEL/Fe2O3_Spline.txt");
-
-  int CheckNum;
-  // How many data points are in the file W_Palik.txt?  This function  will tell us
-
-  // Substrate W data - dielectric function
-  NumLam =   ReadDielectric(subfile, LamList, substrate_eps);
-  // Alloy Materials
-  CheckNum = ReadDielectric(absorberfile, clam, absorber_n);
-  CheckNum = ReadDielectric(dielectricfile, clam, dielectric_n); 
-
-  // Refractive index of alumina
-  nlow = 1.76+0.*I;
-  // Refractive index of ZrO2
-  nhi  = 2.15+0.*I;
-
-  printf("#  Read from files!\n");   
-  printf("#  Read %i entries from file %s\n",NumLam,subfile);
-  printf("#  Read %i entries from file %s\n",CheckNum,absorberfile);
-  printf("#  Read %i entries from file %s\n",CheckNum,dielectricfile);
-  fflush(stdout);
 
   //  Did we pass a filename to the program?
   if (argc==1) {
@@ -157,10 +133,39 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%s",line);
   fscanf(fp,"%lf",&Tempmin);
   fscanf(fp,"%lf",&Tempmax);
-  // name of file to write Pareto front to
+  // File prefix for output files (Pareto front and spectra)
   fscanf(fp,"%s",line);
-  fscanf(fp,"%s",pfile);
+  fscanf(fp,"%s",prefix);
+  strcpy(pfile,prefix);
+  strcat(pfile,"_Pareto.txt");
+  // File name to read absorber data from 
+  fscanf(fp,"%s",line);
+  fscanf(fp,"%s",absorberfile);
+  fclose(fp);
 
+  // Now define the specific file names
+  // Substrate is Tungsten
+  strcpy(subfile,"DIEL/W_Palik.txt");
+  strcpy(dielectricfile,"DIEL/Fe2O3_Spline.txt");
+
+  int CheckNum;
+  // How many data points are in the file W_Palik.txt?  This function  will tell us
+
+  // Substrate W data - dielectric function
+  NumLam =   ReadDielectric(subfile, LamList, substrate_eps);
+  // Alloy Materials
+  CheckNum = ReadDielectric(absorberfile, clam, absorber_n);
+  CheckNum = ReadDielectric(dielectricfile, clam, dielectric_n);
+
+  // Refractive index of alumina
+  nlow = 1.76+0.*I;
+  // Refractive index of ZrO2
+  nhi  = 2.15+0.*I;
+
+  printf("#  Read from files!\n");
+  printf("#  Read %i entries from file %s\n",NumLam,subfile);
+  printf("#  Read %i entries from file %s\n",CheckNum,absorberfile);
+  printf("#  Read %i entries from file %s\n",CheckNum,dielectricfile);
   // How many variations will we try?
   NumVars = N_max-N_min;
   printf("  %i\n",N_min);
@@ -283,8 +288,8 @@ int main(int argc, char* argv[]) {
 	     double complex eps_abs  = absorber_n[ii]*absorber_n[ii];
 	     double complex eps_diel = dielectric_n[ii]*dielectric_n[ii]; 
 	     // Compute alloy RI using Bruggenman theory
-	     //Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
-             MaxwellGarnett(vf, 3.097, substrate_eps[ii], &eta, &kappa);
+	     //Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+             MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
              // store in alloy layer RI
 	     rind[1] = eta + I*kappa;
 
@@ -313,7 +318,7 @@ int main(int argc, char* argv[]) {
  
            }
            SE = SpectralEfficiency(Emiss, NumLam, LamList, lbg, Temp, &PU);
-           printf(" %i  %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",varcount,vf,Nlayer, d1, d2, Temp, SE, PU);
+           printf(" %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",vf,Nlayer, d1, d2, Temp, SE, PU);
            fflush(stdout);
 	   SEA[varcount] = SE;
            SDA[varcount] = PU;
@@ -330,6 +335,8 @@ int main(int argc, char* argv[]) {
  int id;
  varcount=-1;
  int po=0;
+ char *specfile;
+ specfile = VEC_CHAR(1000);
  for (int i=0; i<NumVars; i++) {
 
    for (int j=0; j<NumVars; j++) {
@@ -354,10 +361,15 @@ int main(int argc, char* argv[]) {
 
 	      	   PF[varcount] = 1;
                    po++;
+		   char lab[10];
+		   sprintf(lab, "%d", po);
+		   strcpy(specfile,prefix);
+		   strcat(specfile,lab);
+		   strcat(specfile,"_spectra.txt");
 	      	   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e\n",
 
 		      		   NLA[i],D1A[j],D2A[k],VFA[l],TA[m],SEA[varcount],SDA[varcount]);
-		   double RT = PrintSpectrum("t.txt",d,rind,NLA[i],D1A[j],nlow,D2A[k],nhi,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
+		   double RT = PrintSpectrum(specfile,d,rind,NLA[i],D1A[j],nlow,D2A[k],nhi,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
 	   }
        	 }
        }
@@ -434,8 +446,8 @@ double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer
              double complex eps_abs  = abs_n[ii]*abs_n[ii];
              double complex eps_diel = diel_n[ii]*diel_n[ii];
              // Compute alloy RI using Bruggenman theory
-             //Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
-             MaxwellGarnett(vf, 3.097, subs_eps[ii], &eta, &kappa);
+             //Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+             MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
              // store in alloy layer RI
              rind[1] = eta + I*kappa;
 
@@ -465,7 +477,7 @@ double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer
              fprintf(fp,"%8.6e  %8.6f  %8.6f  %8.6f  %8.6f\n",LamList[ii],R,A,rho*A,rho);
            }
            SE = SpectralEfficiency(Emiss, NumLam, LamList, lbg, Temp, &PU);
-           fprintf(fp," %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",vf,Nlayer, d1, d2, Temp, SE, PU);
+           fprintf(fp,"# %8.6f  %i  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",vf,Nlayer, d1, d2, Temp, SE, PU);
            free(Emiss);
 	   fclose(fp);
            return R;

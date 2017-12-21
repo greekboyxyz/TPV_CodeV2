@@ -1,5 +1,5 @@
 Nmin_Nmax
-5 7
+5 15
 d1min_d1max            
 0.1  0.3
 d2min_d2max
@@ -7,6 +7,9 @@ d2min_d2max
 vfmin_vfmax
 0.0 1.0
 Tmin_Tmax
-1000 1700
-ParetoFile
-Test2_Pareto.txt
+1000 1500
+FilePrefix
+TiN_Alumina
+AbsorberFileName
+DIEL/TiN_Spline.txt
+

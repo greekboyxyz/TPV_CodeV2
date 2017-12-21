@@ -8,10 +8,10 @@ int main(int argc, char** argv)
     int i;
     double lam, n, k;
     FILE *epsfp, *lamfp, *wfp;
-    epsfp = fopen("Fe3O4.txt","r");
+    epsfp = fopen("Ru.txt","r");
     lamfp = fopen("W_Palik.txt","r");
     //wfp   = fopen("W_ald_interpolated","w");
-    int dim = 609;
+    int dim = 87;
     std::vector<double> X(dim), Y(dim), Z(dim);
     std::vector<double> LAM(4000);
 
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
       X[i] = lam;
       Y[i] = n;
       Z[i] = k;
-      //if (i>0) printf(" %i %12.10f\n",i,X[i]-X[i-1]); 
+      if (i>0) printf(" %i %12.10f\n",i,X[i]-X[i-1]); 
     }    
     for (i=0; i<4000; i++) {
     
