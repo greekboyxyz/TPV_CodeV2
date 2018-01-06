@@ -1,6 +1,6 @@
 Nmin_Nmax
-5 10
-d1min_d1max            
+5 14
+d1min_d1max
 0.1  0.3
 d2min_d2max
 0.1  0.3
@@ -9,7 +9,7 @@ vfmin_vfmax
 Tmin_Tmax
 1000 1500
 FilePrefix
-TiN_Alumina
+W_Alumina
 AbsorberFileName
-DIEL/TiN_Spline.txt
+DIEL/W_Spline.txt
 
