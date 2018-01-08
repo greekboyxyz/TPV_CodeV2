@@ -1,9 +1,9 @@
 #!/usr/bin/gnuplot
-  
+
 set terminal postscript enhanced color 'Helvetica' 25
-set output 'TiN_Spectrum_1.eps'
+set output 'Ru_Alumina1_Spectra.eps'
 set xlabel 'Wavelength (nm)'
-set ylabel 'Sectral Density (W/m^2 / nm)'
+set ylabel 'Sectral Density (W/m^2)'
 set pointsize 3
-plot 'TiN_Alumina1_spectra.txt' u 1:4 w l lw 4 title 'Thermal Emission of TiN Emitter', \
-'TiN_Alumina1_spectra.txt' u 1:5 w l lw 4 title 'Blackbody Spectrum at T=1500 K' 
+plot 'Ru_Alumina1_spectra.txt' u ($1*1e9):4 w l lw 5 title 'Thermal Emission', \
+'Ru_Alumina1_spectra.txt' u ($1*1e9):5 w l lw 5 title 'Blackbody - 1500 K'
