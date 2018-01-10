@@ -1,9 +1,9 @@
 #!/usr/bin/gnuplot
 
 set terminal postscript enhanced color 'Helvetica' 25
-set output 'Ru_Alumina1_Spectra.eps'
+set output 'Rh_Alumina1_Spectra.eps'
 set xlabel 'Wavelength (nm)'
 set ylabel 'Sectral Density (W/m^2)'
 set pointsize 3
-plot 'Ru_Alumina1_spectra.txt' u ($1*1e9):4 w l lw 5 title 'Thermal Emission', \
-'Ru_Alumina1_spectra.txt' u ($1*1e9):5 w l lw 5 title 'Blackbody - 1500 K'
+plot 'Rh_Alumina1_spectra.txt' u ($1*1e9):4 w l lw 5 title 'Thermal Emission', \
+'Rh_Alumina1_spectra.txt' u ($1*1e9):5 w l lw 5 title 'Blackbody - 1500 K'
