@@ -9,7 +9,7 @@ vfmin_vfmax
 Tmin_Tmax
 1000 1500
 FilePrefix
-Re_Alumina
+HfN_Alumina
 AbsorberFileName
-DIEL/Re_Spline.txt
+DIEL/HfN_Spline.txt
 
