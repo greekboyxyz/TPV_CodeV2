@@ -288,8 +288,8 @@ int main(int argc, char* argv[]) {
 	     double complex eps_abs  = absorber_n[ii]*absorber_n[ii];
 	     double complex eps_diel = dielectric_n[ii]*dielectric_n[ii]; 
 	     // Compute alloy RI using Bruggenman theory
-	     //Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
-             MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+	     Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+            // MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
              // store in alloy layer RI
 	     rind[1] = eta + I*kappa;
 
@@ -446,8 +446,8 @@ double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer
              double complex eps_abs  = abs_n[ii]*abs_n[ii];
              double complex eps_diel = diel_n[ii]*diel_n[ii];
              // Compute alloy RI using Bruggenman theory
-             //Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
-             MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+             Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+            // MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
              // store in alloy layer RI
              rind[1] = eta + I*kappa;
 
@@ -739,8 +739,8 @@ void Bruggenman(double f, double complex epsD, double complex epsM, double *eta,
 
   // test to see that epsBG satisfy Bruggenman condition
   double complex test;
-   *eta   = creal(csqrt(epsBG));
-   *kappa = cimag(csqrt(epsBG));
+   *eta   = fabs(creal(csqrt(epsBG)));
+   *kappa = fabs(cimag(csqrt(epsBG)));
 
 }
 
