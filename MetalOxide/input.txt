@@ -9,7 +9,8 @@ vfmin_vfmax
 Tmin_Tmax
 1000 1500
 FilePrefix
-TiN_Alumina
+Re_Alumina_BR
 AbsorberFileName
-DIEL/TiN_Spline.txt
-
+DIEL/Re_Spline.txt
+1_FOR_MG_2_FOR_BRUGG
+2

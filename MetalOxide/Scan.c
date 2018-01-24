@@ -23,6 +23,7 @@ int IsDominated(int idx, int LENGTH, double *O1,double *O2);
 void ReadBRRind(int numBR, double lambda, double *BRlambda, double complex *BRind, double *n, double *k); 
 // Global variables
 int polflag;
+int alloyflag;
 double c = 299792458;
 double pi=3.141592653589793;
 
@@ -141,7 +142,28 @@ int main(int argc, char* argv[]) {
   // File name to read absorber data from 
   fscanf(fp,"%s",line);
   fscanf(fp,"%s",absorberfile);
+  // Indicate if we will use MaxwellGarnett or Bruggenman
+  fscanf(fp,"%s",line);
+  fscanf(fp,"%i",&alloyflag);
   fclose(fp);
+
+  if (alloyflag!=1 && alloyflag!=2) {
+	  printf("  INVALID CHOICE FOR ALLOY!\n");
+	  printf("  DEFAULTING TO MAXWELL-GARNETT\n");
+          alloyflag=1;
+  }
+  
+  int matflag=0;
+  if (strcmp(absorberfile,"DIEL/W_Palik.txt")==0) {
+
+          printf("  READING FROM W\n");
+ 	  matflag = 1;
+  }
+  else {
+	  matflag = 0;
+	  printf("  NOT W\n");
+
+  }
 
   // Now define the specific file names
   // Substrate is Tungsten
@@ -285,11 +307,24 @@ int main(int argc, char* argv[]) {
 
 	     // Weak absorber and dielectric data stored as RI, want them in eps 
 	     // for effective medium theory
-	     double complex eps_abs  = absorber_n[ii]*absorber_n[ii];
+             double complex eps_abs;
+             // W data is stored as permittivity
+	     if (matflag==1) {
+		     eps_abs = absorber_n[ii];
+	     }
+	     // Everything else is refractive index
+	     else {
+	             eps_abs  = absorber_n[ii]*absorber_n[ii];
+
+	     }
 	     double complex eps_diel = dielectric_n[ii]*dielectric_n[ii]; 
 	     // Compute alloy RI using Bruggenman theory
-	     Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
-            // MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+             if (alloyflag==2) {
+         	     Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+	     }
+	     else {
+		     MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+	     }
              // store in alloy layer RI
 	     rind[1] = eta + I*kappa;
 
@@ -445,10 +480,16 @@ double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer
              // for effective medium theory
              double complex eps_abs  = abs_n[ii]*abs_n[ii];
              double complex eps_diel = diel_n[ii]*diel_n[ii];
-             // Compute alloy RI using Bruggenman theory
-             Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
-            // MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
-             // store in alloy layer RI
+
+	     if (alloyflag==2) {
+		     // Compute alloy RI using Bruggenman theory
+		     Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+	     }
+             else {
+	     
+		     MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+	     }
+	     // store in alloy layer RI
              rind[1] = eta + I*kappa;
 
              // We have Palik W stored as eps, want RI
@@ -735,10 +776,13 @@ void Bruggenman(double f, double complex epsD, double complex epsM, double *eta,
   f2 = f;
   b = (2*f1 - f2)*eps1 + (2*f2 - f1)*eps2;
 
+  // The real part of epsBG can be positive or negative
+  // but the imaginary part needs to be positive
   epsBG = (b + csqrt(8.*eps1*eps2 + b*b))/4.;
 
   // test to see that epsBG satisfy Bruggenman condition
   double complex test;
+  // both real and imaginary part of n should be positive
    *eta   = fabs(creal(csqrt(epsBG)));
    *kappa = fabs(cimag(csqrt(epsBG)));
 
