@@ -10,7 +10,7 @@ double *VEC_DOUBLE(int dim);
 char *VEC_CHAR(int dim);
 double complex *VEC_CDOUBLE(int dim);
 void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int Cidx, double complex *C);
-double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp,
+double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex *nlow, double d2, double complex *nhi, double vf, double Temp,
                 int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps);
 void TransferMatrix(int Nlayer,double thetaI, double k0, double complex *rind, double *d,
 double complex *cosL, double *beta, double *alpha, double complex *m11, double complex *m21);
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
   // complex double precision variables
   double complex m11, m21, r, t, st, cosL;
   double complex *rind, nlow, nhi;
-  double complex *absorber_n, *dielectric_n, *substrate_eps;
+  double complex *absorber_n, *BR_HighN, *BR_LowN, *substrate_eps;
   double SE, PU;
 
   double h=6.626e-34;
@@ -60,13 +60,15 @@ int main(int argc, char* argv[]) {
 
   //  Arrays for material constants
   absorber_n      = VEC_CDOUBLE(NumLam);
-  dielectric_n    = VEC_CDOUBLE(NumLam);
+  BR_HighN        = VEC_CDOUBLE(NumLam);
+  BR_LowN         = VEC_CDOUBLE(NumLam);
+
   substrate_eps   = VEC_CDOUBLE(NumLam);
 
   FILE *fp;
 
   // Character string(s)
-  char *write, *line, *subfile, *absorberfile, *dielectricfile, *prefix, *pfile;
+  char *write, *line, *subfile, *absorberfile, *BR_HighFile, BR_LowFile, *prefix, *pfile;
 
   write   = VEC_CHAR(1000);
   line    = VEC_CHAR(1000);
@@ -75,7 +77,8 @@ int main(int argc, char* argv[]) {
 
   subfile        = VEC_CHAR(1000);
   absorberfile   = VEC_CHAR(1000);
-  dielectricfile = VEC_CHAR(1000);
+  BR_HighFile    = VEC_CHAR(1000);
+  BR_LowFile     = VEC_CHAR(1000);
 
   //  Did we pass a filename to the program?
   if (argc==1) {
@@ -168,7 +171,9 @@ int main(int argc, char* argv[]) {
   // Now define the specific file names
   // Substrate is Tungsten
   strcpy(subfile,"DIEL/W_Palik.txt");
-  strcpy(dielectricfile,"DIEL/Fe2O3_Spline.txt");
+  // Dielectric in Alloy
+  strcpy(BR_LowFile,"DIEL/Al2O3_Spline.txt");
+  strcpy(BR_HighFile,"DIEL/HfO2_Spline.txt");
 
   int CheckNum;
   // How many data points are in the file W_Palik.txt?  This function  will tell us
@@ -177,7 +182,8 @@ int main(int argc, char* argv[]) {
   NumLam =   ReadDielectric(subfile, LamList, substrate_eps);
   // Alloy Materials
   CheckNum = ReadDielectric(absorberfile, clam, absorber_n);
-  CheckNum = ReadDielectric(dielectricfile, clam, dielectric_n);
+  CheckNum = ReadDielectric(BR_LowFile, clam, BR_LowN);
+  CheckNum = ReadDielectric(BR_HighFile, clamm, BR_HighN);
 
   // Refractive index of alumina
   nlow = 1.76+0.*I;
@@ -187,7 +193,7 @@ int main(int argc, char* argv[]) {
   printf("#  Read from files!\n");
   printf("#  Read %i entries from file %s\n",NumLam,subfile);
   printf("#  Read %i entries from file %s\n",CheckNum,absorberfile);
-  printf("#  Read %i entries from file %s\n",CheckNum,dielectricfile);
+  printf("#  Read %i entries from file %s\n",CheckNum,BR_LowFile);
   // How many variations will we try?
   NumVars = N_max-N_min;
   printf("  %i\n",N_min);
@@ -317,17 +323,27 @@ int main(int argc, char* argv[]) {
 	             eps_abs  = absorber_n[ii]*absorber_n[ii];
 
 	     }
-	     double complex eps_diel = dielectric_n[ii]*dielectric_n[ii]; 
+	     double complex eps_diel = BR_LowN[ii]*BR_LowN[ii]; 
 	     // Compute alloy RI using Bruggenman theory
              if (alloyflag==2) {
-         	     Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+         	     Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
 	     }
 	     else {
-		     MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+		     MaxwellGarnett(vf, creal(eps_diel), eps_abs, &eta, &kappa);
 	     }
              // store in alloy layer RI
 	     rind[1] = eta + I*kappa;
 
+	     // BR Reflector 
+	     for (int jj=2; jj<Nlayer-2; jj++) {
+
+              if (jj%2==0) {
+                rind[jj] = BR_LowN[jj];
+              }
+              else {
+                rind[jj] = BR_HighN[jj];
+              }
+             }
 	     // We have Palik W stored as eps, want RI
 	     rind[Nlayer-2] = csqrt(substrate_eps[ii]);
         
@@ -404,7 +420,7 @@ int main(int argc, char* argv[]) {
 	      	   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e\n",
 
 		      		   NLA[i],D1A[j],D2A[k],VFA[l],TA[m],SEA[varcount],SDA[varcount]);
-		   double RT = PrintSpectrum(specfile,d,rind,NLA[i],D1A[j],nlow,D2A[k],nhi,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
+		   double RT = PrintSpectrum(specfile,d,rind,NLA[i],D1A[j],BR_LowN,D2A[k],BR_HighN,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
 	   }
        	 }
        }
@@ -420,7 +436,7 @@ int main(int argc, char* argv[]) {
 
 // Functions
 //
-double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex nlow, double d2, double complex nhi, double vf, double Temp, 
+double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex *nlow, double d2, double complex *nhi, double vf, double Temp, 
 		int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps) {
             FILE *fp;
 	    double Tangle;
