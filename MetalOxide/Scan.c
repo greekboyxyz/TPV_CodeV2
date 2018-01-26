@@ -11,7 +11,7 @@ char *VEC_CHAR(int dim);
 double complex *VEC_CDOUBLE(int dim);
 void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int Cidx, double complex *C);
 double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex *nlow, double d2, double complex *nhi, double vf, double Temp,
-                int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps);
+                int NumLam, double *LamList, double complex *abs_n, double complex *subs_eps);
 void TransferMatrix(int Nlayer,double thetaI, double k0, double complex *rind, double *d,
 double complex *cosL, double *beta, double *alpha, double complex *m11, double complex *m21);
 double SpectralEfficiency(double *emissivity, int N, double *lambda, double lambdabg, double Temperature, double *P);
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   FILE *fp;
 
   // Character string(s)
-  char *write, *line, *subfile, *absorberfile, *BR_HighFile, BR_LowFile, *prefix, *pfile;
+  char *write, *line, *subfile, *absorberfile, *BR_HighFile, *BR_LowFile, *prefix, *pfile;
 
   write   = VEC_CHAR(1000);
   line    = VEC_CHAR(1000);
@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
   // Alloy Materials
   CheckNum = ReadDielectric(absorberfile, clam, absorber_n);
   CheckNum = ReadDielectric(BR_LowFile, clam, BR_LowN);
-  CheckNum = ReadDielectric(BR_HighFile, clamm, BR_HighN);
+  CheckNum = ReadDielectric(BR_HighFile, clam, BR_HighN);
 
   // Refractive index of alumina
   nlow = 1.76+0.*I;
@@ -281,11 +281,9 @@ int main(int argc, char* argv[]) {
 
               if (ii%2==0) {
                 d[ii] = d1;
-                rind[ii] = nlow;
               }
               else {
                 d[ii] = d2;
-                rind[ii] = nhi;
               }
             }
 
@@ -338,10 +336,10 @@ int main(int argc, char* argv[]) {
 	     for (int jj=2; jj<Nlayer-2; jj++) {
 
               if (jj%2==0) {
-                rind[jj] = BR_LowN[jj];
+                rind[jj] = BR_LowN[ii];
               }
               else {
-                rind[jj] = BR_HighN[jj];
+                rind[jj] = BR_HighN[ii];
               }
              }
 	     // We have Palik W stored as eps, want RI
@@ -420,7 +418,7 @@ int main(int argc, char* argv[]) {
 	      	   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e\n",
 
 		      		   NLA[i],D1A[j],D2A[k],VFA[l],TA[m],SEA[varcount],SDA[varcount]);
-		   double RT = PrintSpectrum(specfile,d,rind,NLA[i],D1A[j],BR_LowN,D2A[k],BR_HighN,VFA[l],TA[m],NumLam,LamList,absorber_n,dielectric_n,substrate_eps);
+		   double RT = PrintSpectrum(specfile,d,rind,NLA[i],D1A[j],BR_LowN,D2A[k],BR_HighN,VFA[l],TA[m],NumLam,LamList,absorber_n,substrate_eps);
 	   }
        	 }
        }
@@ -437,7 +435,7 @@ int main(int argc, char* argv[]) {
 // Functions
 //
 double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer, double d1, double complex *nlow, double d2, double complex *nhi, double vf, double Temp, 
-		int NumLam, double *LamList, double complex *abs_n, double complex *diel_n, double complex *subs_eps) {
+		int NumLam, double *LamList, double complex *abs_n, double complex *subs_eps) {
             FILE *fp;
 	    double Tangle;
        	    double eta, kappa;
@@ -461,11 +459,9 @@ double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer
 
               if (ii%2==0) {
                 d[ii] = d1;
-                rind[ii] = nlow;
               }
               else {
                 d[ii] = d2;
-                rind[ii] = nhi;
               }
             }
 
@@ -495,18 +491,27 @@ double PrintSpectrum(char *filename, double *d, double complex *rind, int Nlayer
 	                  // Weak absorber and dielectric data stored as RI, want them in eps
              // for effective medium theory
              double complex eps_abs  = abs_n[ii]*abs_n[ii];
-             double complex eps_diel = diel_n[ii]*diel_n[ii];
+             double complex eps_diel = nlow[ii]*nlow[ii];
 
 	     if (alloyflag==2) {
 		     // Compute alloy RI using Bruggenman theory
-		     Bruggenman(vf, (3.097+0.*I), eps_abs, &eta, &kappa);
+		     Bruggenman(vf, eps_diel, eps_abs, &eta, &kappa);
 	     }
              else {
 	     
-		     MaxwellGarnett(vf, 3.097, eps_abs, &eta, &kappa);
+		     MaxwellGarnett(vf, creal(eps_diel), eps_abs, &eta, &kappa);
 	     }
 	     // store in alloy layer RI
              rind[1] = eta + I*kappa;
+             for (int jj=2; jj<Nlayer-2; jj++) {
+
+               if (jj%2==0) {
+                 rind[jj] = nlow[ii];
+               }
+               else {
+                 rind[jj] = nhi[ii];
+               }
+             }
 
              // We have Palik W stored as eps, want RI
              rind[Nlayer-2] = csqrt(subs_eps[ii]);
