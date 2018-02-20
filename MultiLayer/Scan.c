@@ -208,9 +208,11 @@ int main(int argc, char* argv[]) {
   // What will be the delta on d2?
   d2_delta = (d2max-d2min)/(NumVars-1);
   printf("  d2 between %f and %f in increments of %f\n",d2min,d2max,d2_delta);
-  // What will be the delta on vf?
+  // What will be the delta on d3?
   d3_delta = (d3max-d3min)/(NumVars-1);
   printf("  vf between %f and %f in increments of %f\n",d3min,d3max,d3_delta);
+  // What will be the delta on d4?
+  d4_delta = (d4max-d4min)/(NumVars-1);
   // What will be the delta on T?
   T_delta = (Tempmax-Tempmin)/(NumVars-1);
   printf("  T between %f and %f in increments of %f\n",Tempmin,Tempmax,T_delta);
