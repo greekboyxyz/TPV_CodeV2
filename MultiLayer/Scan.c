@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   double sti, n1, n2, thetaT, rp, Rp, Tangle;
   double eta, kappa;
   double we, de, w;
-  int Nlayer, N_BR, N_ML;
+  int Nlayer, N_BR, N_ML, ML_Period;
   // Lists for spectral efficiency
   double *LamList, *Emiss, *clam;
   // Variables for Spectral Efficiency
@@ -143,6 +143,9 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%s",line);
   fscanf(fp,"%lf",&Tempmin);
   fscanf(fp,"%lf",&Tempmax);
+  // read info on number of multi-layer periods
+  fscanf(fp,"%s",line);
+  fscanf(fp,"%i",&ML_Period);
   // File prefix for output files (Pareto front and spectra)
   fscanf(fp,"%s",line);
   fscanf(fp,"%s",prefix);
@@ -249,7 +252,7 @@ int main(int argc, char* argv[]) {
   for (int i=0; i<NumVars; i++) {
 
     Nlayer = N_min+i;
-    N_ML = 3;
+    N_ML = 2*ML_Period;
     N_BR = Nlayer - N_ML - 3;
     NLA[i] = Nlayer;
 
