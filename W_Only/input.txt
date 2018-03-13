@@ -1,5 +1,5 @@
 Nmin_Nmax
-5 20 
+15 30 
 d1min_d1max            
 0.05  0.3
 d2min_d2max
@@ -11,8 +11,8 @@ d4min_d4max
 Tmin_Tmax
 1473 1500
 Number_of_MultiLayer_Periods
-0
+6
 FilePrefix
-TiN_Alumina_BR_0ML
+TiN_Alumina_BR_6ML
 AbsorberFileName
 DIEL/TiN_Spline.txt

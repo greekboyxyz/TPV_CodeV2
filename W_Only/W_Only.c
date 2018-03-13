@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   double sti, n1, n2, thetaT, rp, Rp, Tangle;
   double eta, kappa;
   double we, de, w;
-  int Nlayer, N_BR, N_ML, ML_Period;
+  int Nlayer, N_BR, N_ML;
   // Lists for spectral efficiency
   double *LamList, *Emiss, *clam;
   // Variables for Spectral Efficiency
@@ -143,14 +143,11 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%s",line);
   fscanf(fp,"%lf",&Tempmin);
   fscanf(fp,"%lf",&Tempmax);
-  // read info on number of multi-layer periods
-  fscanf(fp,"%s",line);
-  fscanf(fp,"%i",&ML_Period);
   // File prefix for output files (Pareto front and spectra)
   fscanf(fp,"%s",line);
   fscanf(fp,"%s",prefix);
   strcpy(pfile,prefix);
-  strcat(pfile,"_Pareto.txt");
+  strcat(pfile,"_MLPareto.txt");
   // File name to read absorber data from 
   fscanf(fp,"%s",line);
   fscanf(fp,"%s",absorberfile);
@@ -178,115 +175,25 @@ int main(int argc, char* argv[]) {
   // Now define the specific file names
   // Substrate is Tungsten
   strcpy(subfile,"DIEL/W_Palik.txt");
-  // Dielectric in Alloy
-  strcpy(BR_LowFile,"DIEL/Al2O3_Spline.txt");
-  strcpy(BR_HighFile,"DIEL/HfO2_Spline.txt");
-  int CheckNum;
-  // How many data points are in the file W_Palik.txt?  This function  will tell us
-
   // Substrate W data - dielectric function
   NumLam =   ReadDielectric(subfile, LamList, substrate_eps);
-  // Alloy Materials
-  CheckNum = ReadDielectric(absorberfile, clam, absorber_n);
-  CheckNum = ReadDielectric(BR_LowFile, clam, BR_LowN);
-  CheckNum = ReadDielectric(BR_HighFile, clam, BR_HighN);
-
-  // Refractive index of alumina
-  nlow = 1.76+0.*I;
-  // Refractive index of ZrO2
-  nhi  = 2.15+0.*I;
 
   printf("#  Read from files!\n");
-  printf("#  Read %i entries from file %s\n",NumLam,subfile);
-  printf("#  Read %i entries from file %s\n",CheckNum,absorberfile);
-  printf("#  Read %i entries from file %s\n",CheckNum,BR_LowFile);
-  // How many variations will we try?
-  NumVars = N_max-N_min;
-  printf("  %i\n",N_min);
-  printf("  %i\n",N_max);
-  printf("  %i\n",NumVars);
-  // What will be the delta on d1?
-  d1_delta = (d1max-d1min)/(NumVars-1);
-  printf("  d1 between %f and %f in increments of %f\n",d1min,d1max,d1_delta);
-  // What will be the delta on d2?
-  d2_delta = (d2max-d2min)/(NumVars-1);
-  printf("  d2 between %f and %f in increments of %f\n",d2min,d2max,d2_delta);
-  // What will be the delta on d3?
-  d3_delta = (d3max-d3min)/(NumVars-1);
-  printf("  vf between %f and %f in increments of %f\n",d3min,d3max,d3_delta);
-  // What will be the delta on d4?
-  d4_delta = (d4max-d4min)/(NumVars-1);
-  // What will be the delta on T?
-  T_delta = (Tempmax-Tempmin)/(NumVars-1);
-  printf("  T between %f and %f in increments of %f\n",Tempmin,Tempmax,T_delta);
 
   Temp = Tempmin; 
   polflag=1;
-
-  int *NLA, *PF;
-  double *D1A, *D2A, *D3A, *D4A, *TA, *SEA, *SDA, *ETAA;
-
-  int totalVars = pow(NumVars,5.0);
-  // Arrays that are only NumVars long
-  NLA = (int*)malloc(NumVars*sizeof(int));
-  D1A = (double*)malloc(NumVars*sizeof(double));
-  D2A = (double*)malloc(NumVars*sizeof(double));
-  D3A = (double*)malloc(NumVars*sizeof(double));
-  D4A = (double*)malloc(NumVars*sizeof(double));
-  TA  = (double*)malloc(NumVars*sizeof(double));
-
-  // Arrays that are totalVars long
-  SEA  = (double*)malloc(totalVars*sizeof(double));
-  SDA  = (double*)malloc(totalVars*sizeof(double));
-  ETAA = (double*)malloc(totalVars*sizeof(double));
-  PF  = (int*)malloc(totalVars*sizeof(int));
-
   // Arrays for TMM - 1000 is excessively long, but safe
   d = VEC_DOUBLE(1000);
   rind = VEC_CDOUBLE(1000);
-  d_array = VEC_DOUBLE(4);
-  n_array = VEC_CDOUBLE(5);
 
-  int varcount=-1;
-  printf("  NL d1        d2       d3        d4         Temp         SE                SD\n");
+  int varcount=0;
   // Loop over Nlayer - keeping fixed for now!
-  for (int i=0; i<NumVars; i++) {
+  Nlayer = 3;
 
-    Nlayer = N_min+i;
-    N_ML = 2*ML_Period;
-    N_BR = Nlayer - N_ML - 3;
-    NLA[i] = Nlayer;
-
-    // Loop over d1
-    for (int j=0; j<NumVars; j++) {
-
-      d1 = d1min + j*d1_delta;
-      D1A[j] = d1; 
-      d_array[0] = d1;
-      // Loop over d2
-      for (int k=0; k<NumVars; k++) {
-      
-        d2 = d2min + k*d2_delta;
-	D2A[k] = d2;
-        d_array[1] = d2;
-        // Loop over d3
-	for (int l=0; l<NumVars; l++) {
-       
-          d3 = d3min + l*d3_delta;
-	  D3A[l] = d3;
-          d_array[2] = d3;
-	  // Loop over d4
-	  for (int m=0; m<NumVars; m++) {
-
-            d4 = d4min + m*d4_delta;
-            D4A[m] = d4;
-            d_array[3] = d4;
-	    varcount++;
-   
-            // Normal incidence
-            thetaI = 0;
-            // Structure is established, now analayze it for its spectrum 
-            for (int ii=0; ii<NumLam; ii++) {
+  // Normal incidence
+  thetaI = 0;
+  // Structure is established, now analayze it for its spectrum 
+  for (int ii=0; ii<NumLam; ii++) {
 
 	     	     
              lambda = LamList[ii];    // Lambda in meters
@@ -294,14 +201,12 @@ int main(int argc, char* argv[]) {
              w=2*pi*c/lambda;        // angular frequency 
 
              // Fill n_array
-             n_array[0] = BR_LowN[ii];
-	     n_array[1] = BR_HighN[ii];
-	     n_array[2] = BR_LowN[ii];
-	     n_array[3] = absorber_n[ii]; 
-	     n_array[4] = csqrt(substrate_eps[ii]);
-
-	     // Now build ML rind and d arrays
-	     BuildML(N_BR, N_ML, d_array, n_array, rind, d);
+             rind[0] = 1. + 0.*I;
+	     rind[1] = csqrt(substrate_eps[ii]);
+             rind[2] = 1. + 0.*I;
+	     d[0] = 0.;
+	     d[1] = 0.9;
+	     d[2] = 0.; 
 
 	     // Solve the Transfer Matrix Equations
 	     TransferMatrix(Nlayer, thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
@@ -322,74 +227,12 @@ int main(int argc, char* argv[]) {
  
              // Store absorbance/emissivity in array Emiss
              Emiss[ii] = A;
+	     printf(" %12.10e  %12.10e  %12.10e  %12.10e  %12.10e\n",lambda, R, A, rho*A, rho);
            }
            SE = SpectralEfficiency(Emiss, NumLam, LamList, lbg, Temp, &PU, &eta_tpv);
-           printf(" %i %8.6f %8.6f %8.6f %8.6f %8.6f %12.10e %12.10e  %12.10e\n",Nlayer, d1, d2, d3, d4, Temp, SE, PU, eta_tpv);
-           fflush(stdout);
-	   SEA[varcount] = SE;
-           SDA[varcount] = PU;
-           ETAA[varcount] = eta_tpv;
-         }
-       }
-     }
-   }
- }
+           printf(" %8.6f %8.6f %12.10e %12.10e\n",Temp, SE, PU, eta_tpv);
 
-  
- FILE *pf;
- pf = fopen(pfile,"w");
- int id;
- varcount=-1;
- int po=0;
- char *specfile;
- specfile = VEC_CHAR(1000);
- for (int i=0; i<NumVars; i++) {
-
-   for (int j=0; j<NumVars; j++) {
-
-     for (int k=0; k<NumVars; k++) {
-
-       for (int l=0; l<NumVars; l++) {
-  
-         for (int m=0; m<NumVars; m++) {
-
-           varcount++;
-           //printf("  varcount is %i\n",varcount);
-	   //fflush(stdout);
-	   // id is 1 if member i is dominated by at least one other member j!=i
-	   // a member is pareto optimal only if it is NOT dominated 
-
-	   id = IsDominated(varcount, totalVars, SEA, SDA);
-
-	   if (id) PF[varcount] = 0;
-
-	   else {
-
-	      	   PF[varcount] = 1;
-                   po++;
-		   char lab[10];
-		   sprintf(lab, "%d", po);
-		   strcpy(specfile,prefix);
-		   strcat(specfile,lab);
-		   strcat(specfile,"_spectra.txt");
-                   // Note VFA currently holds d3... might want to change the name!
-		   fprintf(pf,"  %i  %f  %f     %f       %f   %12.10f  %12.10e %12.10e\n",
-                                   
-		      		   NLA[i],D1A[j],D2A[k],D3A[l],D4A[m],SEA[varcount],SDA[varcount],ETAA[varcount]);
-                   d_array[0] = D1A[j];
-		   d_array[1] = D2A[k];
-		   d_array[2] = D3A[l];
-		   d_array[3] = D4A[m];
-		   //PrintSpectrum(char *filename, int NBR, int NML, double d_array, double complex *nlow, double complex *nhi, double complex *abs_n, double complex *sub_eps, int NumLam, double *LamList, double Temp)
-		   double RT = PrintSpectrum(specfile,NLA[i]-6, 3, d_array, BR_LowN, BR_HighN, absorber_n, substrate_eps, NumLam, LamList, Temp);
-	   }
-       	 }
-       }
-     }
-   }
- }
  fclose(fp);
- fclose(pf);
 
  return 0;
 
@@ -398,7 +241,7 @@ int main(int argc, char* argv[]) {
 // Functions
 //
 double PrintSpectrum(char *filename, int NBR, int NML, double *d_array, double complex *nlow, double complex *nhi, double complex *abs_n, double complex *sub_eps, int NumLam, double *LamList, double Temp) {
-           int Nlayer = NBR + NML + 3;
+           int Nlayer = 5;
            FILE *fp;
            double Tangle;
       	   double eta, kappa;
@@ -438,7 +281,7 @@ double PrintSpectrum(char *filename, int NBR, int NML, double *d_array, double c
 	     n_array[4] = csqrt(sub_eps[ii]);
 
 
-	     BuildML(NBR, NML, d_array, n_array, rind, d);
+	     BuildML(0, 3, d_array, n_array, rind, d);
 
              // Solve the Transfer Matrix Equations
              TransferMatrix(Nlayer, thetaI, k0, rind, d, &cosL, &beta, &alpha, &m11, &m21);
@@ -463,7 +306,7 @@ double PrintSpectrum(char *filename, int NBR, int NML, double *d_array, double c
              fprintf(fp,"%8.6e  %8.6f  %8.6f  %8.6f  %8.6f\n",LamList[ii],R,A,rho*A,rho);
            }
            SE = SpectralEfficiency(Emiss, NumLam, LamList, lbg, Temp, &PU, &eta_tpv);
-           fprintf(fp,"# %i  %8.6f %8.6f  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e %12.10e\n",Nlayer, d_array[0], d_array[1], d_array[2], d_array[3],Temp, SE, PU, eta_tpv);
+           fprintf(fp,"# %i  %8.6f %8.6f  %8.6f  %8.6f  %8.6f  %12.10e  %12.10e\n",Nlayer, d_array[0], d_array[1], d_array[2], d_array[3],Temp, SE, PU);
            free(Emiss);
 	   fclose(fp);
 	   free(rind);
@@ -675,6 +518,8 @@ void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int C
       }
 
 }
+
+
 // Going to calcalate spectral efficiency and useful power density of emitter along with an 
 // estimate of the overall device efficiency (assuming perfect absorber efficiency).
 // eta_tpv = (Voc * Jsc * FF)/P_inc
@@ -682,6 +527,7 @@ void CMatMult2x2(int Aidx, double complex *A, int Bidx, double complex *B, int C
 // Voc is the open-circuit voltage, which we approximate using Eq. (10) in the Optics Express article
 // by Raphaeli and Fan, (2009) Vol. 17, pp 15145
 // Jsc  
+
 double SpectralEfficiency(double *emissivity, int N, double *lambda, double lbg, double T, double *P, double *eta_tpv){
     int i;
     double dlambda, sumD, sumN, QE, QC;
@@ -697,13 +543,12 @@ double SpectralEfficiency(double *emissivity, int N, double *lambda, double lbg,
     double f = 1./2; // non-ideality factor of the cell
     double FF = 0.55; // Seems to be maximum possible value of InGaAsSb cells at 80 C
     double F = 0.84;  // view factor for planar emitter separated from PV by 1 mm gap
-    double EQE = 0.82;  // Can assume that InGaAsSb response is 0.82 * Step Function... 
+    double EQE = 0.82;  // Can assume that InGaAsSb response is 0.82 * Step Function...
 
     sumD = 0.;
     sumN = 0.;
     QE = 0.;
     QC = 0.;
-
     // Jsc isintegral of thermal emission spectrum falling on cell times response function of cell...
     // going to assume InGaAsSb cell has reponse of 0.82*Step(E_bg)
     Jsc = 0.;
@@ -720,22 +565,23 @@ double SpectralEfficiency(double *emissivity, int N, double *lambda, double lbg,
       if (l<=lbg) {
         // Spectral efficiency numerator
         sumN += (l/lbg)*em*rho_Em*dlambda;
-	// Photon number flux from emitter
-        QE += (l/(h*c))* em * rho_Em * dlambda;  
+        // Photon number flux from emitter
+        QE += (l/(h*c))* em * rho_Em * dlambda;
         // Photon number flux from cell
-	QC += (l/(h*c))* rho_Cell * dlambda;
-	// contribution to J_sc
-	Jsc += q * F * (l/(h*c)) * em * rho_Em * EQE * dlambda;
+        QC += (l/(h*c))* rho_Cell * dlambda;
+        // contribution to J_sc
+        Jsc += q * F * (l/(h*c)) * em * rho_Em * EQE * dlambda;
       }
     }
 
     Voc =((kb*T_cell)/q)*log(f*QE/QC);
     *eta_tpv = (Voc * Jsc * FF)/sumD;
     *P = sumN;
-    
+
     return sumN/sumD;
 
 }
+
 
 
 void Bruggenman(double f, double complex epsD, double complex epsM, double *eta, double *kappa) {
@@ -931,49 +777,16 @@ void BuildML(int N_BR, int N_ML, double *d_layer, double complex *n, double comp
 	n5 = n[4];
 
 	// First and last layers of structure are always air with thickness d=0
-	rind[0] = 1.0+0*I;
+	rind[0] = 1.0+0.*I;
 	d[0] = 0.;
-
-	rind[Numlayer-1] = 1.0+0.*I;
-	d[Numlayer-1] = 0.;
-
-	// Second to last layer of structure is always optically-thick Tungsten
-	rind[Numlayer-2] = n5; 
-	d[Numlayer-2] = 0.9;
-
-	// Take care of Bragg Reflector
-	for (int i=1; i<=N_BR; i++) {
-                // Even index -> high RI layers
-		if (i%2==0) {
-			rind[i] = n2;
-			d[i] = d2;
-		}
-		// Odd index -> low RI layers
-		else {
-			rind[i] = n1;
-			d[i] = d2;
-		}
-	}
-
-	// Take care of MultiLayer
-	for (int i=N_BR+1; i<=ML_idx; i++) {
-
-		// Even index -> dielectric
-		if (i%2==0) {
-			rind[i] = n3;
-			d[i] = d3;
-		}
-		// Odd index -> metal
-		else {
-			rind[i] = n4;
-			d[i] = d4;
-		}
-	}
-
-/*	for (int i=0; i<Numlayer; i++) {
-		printf("  %12.10e (%12.10e + i*%12.10e)\n",d[i],creal(rind[i]),cimag(rind[i]));
-	}
-*/
+        rind[1] = n3;
+	d[1] = d3;
+	rind[2] = n4;
+	d[2] = d4;
+	rind[3] = n3;
+	d[3] = d3;
+	rind[4] = 1.0+0.*I;
+	d[4] = 0.;
 
 }
 
