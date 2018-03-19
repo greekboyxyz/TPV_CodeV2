@@ -698,7 +698,8 @@ double SpectralEfficiency(double *emissivity, int N, double *lambda, double lbg,
     double FF = 0.55; // Seems to be maximum possible value of InGaAsSb cells at 80 C
     double F = 0.84;  // view factor for planar emitter separated from PV by 1 mm gap
     double EQE = 0.82;  // Can assume that InGaAsSb response is 0.82 * Step Function... 
-
+    double red_v;
+    double beta = 0.96;
     sumD = 0.;
     sumN = 0.;
     QE = 0.;
@@ -724,12 +725,26 @@ double SpectralEfficiency(double *emissivity, int N, double *lambda, double lbg,
         QE += (l/(h*c))* em * rho_Em * dlambda;  
         // Photon number flux from cell
 	QC += (l/(h*c))* rho_Cell * dlambda;
-	// contribution to J_sc
-	Jsc += q * F * (l/(h*c)) * em * rho_Em * EQE * dlambda;
+	// contribution to J_sc - this is a carrier flux density, not a current density... no charge dimension
+        // Use with definition of Voc that is potential energy/carrier (modified) formula from Chan et al, Solar Energy Materials and Solar Cells, 94 (2010) 509-514
+	Jsc += F * (l/(h*c)) * em * rho_Em * EQE * dlambda;
+	// The below is actually a current density, because it has charge... use with true open circuit voltage with has dimensions energy/charge 
+	//Jsc += q * F * (l/(h*c)) * em * rho_Em * EQE * dlambda;
       }
     }
 
-    Voc =((kb*T_cell)/q)*log(f*QE/QC);
+    // This Voc is not a true electrical voltage, it is has dimensions of potential energy/carrier... should be used
+    // with the form of J_sc that quantifies carrier flux density... (modified) formula from Rephaeli and Fan, Optics Express, 17 (2009) 15145
+    Voc = kb*T_cell * log(f*QE/QC);
+    // The below is actually a voltage, energy/charge
+    //Voc =((kb*T_cell)/q)*log(f*QE/QC);
+
+    // To compute FF using expression in Qiu et al's 2006 Solar Energy Materials and Solar Cells (vol 90, pg 68-81), will want
+    // to use Voc that is energy/carrier and Jsc that is a carrier flux densityl... if you are using Voc as a potential and Jsc as
+    // a current density, the formula from Qiu et al for FF will not be dimensionless...
+    red_v = Voc/(kb*T_cell);
+    FF = beta * (red_v - log(red_v + 0.72))/(red_v + 1);
+
     *eta_tpv = (Voc * Jsc * FF)/sumD;
     *P = sumN;
     
