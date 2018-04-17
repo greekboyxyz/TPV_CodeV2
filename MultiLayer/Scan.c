@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
   fscanf(fp,"%s",absorberfile);
   // Read refractive index of dielectric material in multi-layer
   fscanf(fp,"%s",line);
-  fscanf(fp,"%lf",multilayer_ri);
+  fscanf(fp,"%lf",&multilayer_ri);
   // Indicate if we will use MaxwellGarnett or Bruggenman
 
   fclose(fp);
