@@ -26,7 +26,7 @@ int polflag;
 int alloyflag;
 double c = 299792458;
 double pi=3.141592653589793;
-
+double multilayer_ri;
 int main(int argc, char* argv[]) {
   // complex double precision variables
   double complex m11, m21, r, t, st, cosL;
@@ -154,7 +154,11 @@ int main(int argc, char* argv[]) {
   // File name to read absorber data from 
   fscanf(fp,"%s",line);
   fscanf(fp,"%s",absorberfile);
+  // Read refractive index of dielectric material in multi-layer
+  fscanf(fp,"%s",line);
+  fscanf(fp,"%lf",multilayer_ri);
   // Indicate if we will use MaxwellGarnett or Bruggenman
+
   fclose(fp);
 
   if (alloyflag!=1 && alloyflag!=2) {
@@ -296,7 +300,12 @@ int main(int argc, char* argv[]) {
              // Fill n_array
              n_array[0] = BR_LowN[ii];
 	     n_array[1] = BR_HighN[ii];
-	     n_array[2] = BR_LowN[ii];
+             // The next entry of n_array stores the refractive
+             // index of the dielectric material in the multi-layer
+             // structure... this can be Al2O3, AlN, TiO2, among other materials...
+             // currently (as of 4/17/18) we are specifying the
+             // refractive index through a single value in the input file
+	     n_array[2] = multilayer_ri;
 	     n_array[3] = absorber_n[ii]; 
 	     n_array[4] = csqrt(substrate_eps[ii]);
 
@@ -433,7 +442,7 @@ double PrintSpectrum(char *filename, int NBR, int NML, double *d_array, double c
              // for effective medium theory
              n_array[0] = nlow[ii];
 	     n_array[1] = nhi[ii];
-	     n_array[2] = nlow[ii];
+	     n_array[2] = multilayer_ri;
 	     n_array[3] = abs_n[ii];
 	     n_array[4] = csqrt(sub_eps[ii]);
 

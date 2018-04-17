@@ -1,13 +1,5 @@
 Nmin_Nmax
-<<<<<<< HEAD
-<<<<<<< HEAD
 23 38 
-=======
-5 20 
->>>>>>> 623a9780826e2745891d211d1f8babdca850e69d
-=======
-7 22 
->>>>>>> de96695c3370aef97f8f422a3a5e8d0f1f6b6423
 d1min_d1max            
 0.05  0.3
 d2min_d2max
@@ -19,20 +11,10 @@ d4min_d4max
 Tmin_Tmax
 1473 1500
 Number_of_MultiLayer_Periods
-<<<<<<< HEAD
-<<<<<<< HEAD
 10
 FilePrefix
 TiN_Alumina_BR_10ML
-=======
-0
-FilePrefix
-TiN_Alumina_BR_0ML
->>>>>>> 623a9780826e2745891d211d1f8babdca850e69d
-=======
-1
-FilePrefix
-TiN_Alumina_BR_1ML
->>>>>>> de96695c3370aef97f8f422a3a5e8d0f1f6b6423
 AbsorberFileName
 DIEL/TiN_Spline.txt
+MultiLayerRefractiveIndex_AlN=1.9_TiO2=2.45
+1.9
